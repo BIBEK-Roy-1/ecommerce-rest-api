@@ -1,72 +1,1020 @@
 {
-    "swagger" : "2.0",
-    "info":{
-        "version":"1.0.0",
-        "description":"API for E-commerce application",
-        "title":"E-commerce API"
+  "swagger": "2.0",
+
+  "info": {
+    "version": "1.0.0",
+    "title": "E-commerce REST API",
+    "description": "REST API for an E-commerce application built using Node.js, Express.js and JWT authentication."
+  },
+
+  "basePath": "/",
+
+  "consumes": [
+    "application/json"
+  ],
+
+  "produces": [
+    "application/json"
+  ],
+
+  "tags": [
+    {
+      "name": "General",
+      "description": "General API routes"
     },
-    "securityDefinitions": {
-        "JWT":{
-            "in":"header",
-            "name":"Authorization",
-            "type":"apiKey"
+    {
+      "name": "Users",
+      "description": "User signup and signin APIs"
+    },
+    {
+      "name": "Products",
+      "description": "Product CRUD, filtering and rating APIs"
+    },
+    {
+      "name": "Cart",
+      "description": "Shopping cart APIs"
+    }
+  ],
+
+  "securityDefinitions": {
+  "JWT": {
+    "type": "apiKey",
+    "name": "Authorization",
+    "in": "header",
+    "description": "Paste only your JWT token"
+  }
+},
+
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "General"
+        ],
+        "summary": "API welcome route",
+        "description": "Checks whether the API server is running.",
+        "produces": [
+          "text/plain"
+        ],
+        "responses": {
+          "200": {
+            "description": "API server is running"
+          }
         }
+      }
     },
-    "paths":{
-        "/api/user/signin/" :{
-            "post" :{
-                "tags":["Users"],
-                "summary":"login",
-                "description": "user login to get token",
-                "parameters":[
-                    {
-                        "in":"body",
-                        "name":"body",
-                        "description":"user Crenditials",
-                        "schema":{
-                            "type":"object",
-                            "properties":{
-                                "email":{
-                                    "type":"string"
-                                },
-                                "password":{
-                                    "type":"string"
-                                }
-                            }
-                        }
-                    }
-                ],
 
-                "responses":{
-                    "200":{
-                        "description":"ok"
-                    },
-                    "400":{
-                        "description":"Incorrect Credentials"
-                    }
-                }
+    "/api/user/signup": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Create a new user",
+        "description": "Registers a new customer or seller.",
 
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "New user details",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserSignupRequest"
             }
+          }
+        ],
+
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+
+          "400": {
+            "description": "Invalid user details",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+
+    "/api/user/signin": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Sign in user",
+        "description": "Authenticates a user and returns a JWT token.",
+
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "User login credentials",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserSigninRequest"
+            }
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "schema": {
+              "$ref": "#/definitions/SigninResponse"
+            }
+          },
+
+          "400": {
+            "description": "Incorrect credentials",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+
+    "/api/products": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Get all products",
+        "description": "Returns all products available in the application.",
+
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Products fetched successfully",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Product"
+              }
+            }
+          },
+
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      },
+
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Add a new product",
+        "description": "Creates and adds a new product.",
+
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Product details",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ProductInput"
+            }
+          }
+        ],
+
+        "responses": {
+          "201": {
+            "description": "Product added successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Product added successfully"
+                },
+                "product": {
+                  "$ref": "#/definitions/Product"
+                }
+              }
+            }
+          },
+
+          "400": {
+            "description": "Invalid product details",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+
+    "/api/products/filter": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Filter products",
+        "description": "Filters products using minimum price, maximum price and category.",
+
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+
+        "parameters": [
+          {
+            "name": "minPrice",
+            "in": "query",
+            "description": "Minimum product price",
+            "required": false,
+            "type": "number",
+            "format": "float"
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "description": "Maximum product price",
+            "required": false,
+            "type": "number",
+            "format": "float"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Product category",
+            "required": false,
+            "type": "string"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Filtered products returned successfully",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Product"
+              }
+            }
+          },
+
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+
+    "/api/products/rate": {
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Rate a product",
+        "description": "Adds or updates the authenticated user's rating for a product.",
+
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Product ID and rating",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RatingInput"
+            }
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Rating added or updated successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Rating added successfully"
+                },
+                "product": {
+                  "$ref": "#/definitions/Product"
+                }
+              }
+            }
+          },
+
+          "400": {
+            "description": "Rating must be between 1 and 5",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+
+          "404": {
+            "description": "User or product not found",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+
+    "/api/products/{id}": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Get one product",
+        "description": "Returns a product using its ID.",
+
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Product ID",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Product found successfully",
+            "schema": {
+              "$ref": "#/definitions/Product"
+            }
+          },
+
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+
+          "404": {
+            "description": "Product not found",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      },
+
+      "put": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Update a product",
+        "description": "Updates one or more fields of an existing product.",
+
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Product ID",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Fields to update",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ProductUpdateInput"
+            }
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Product updated successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Product updated successfully"
+                },
+                "product": {
+                  "$ref": "#/definitions/Product"
+                }
+              }
+            }
+          },
+
+          "400": {
+            "description": "Invalid product details",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+
+          "404": {
+            "description": "Product not found",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      },
+
+      "delete": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Delete a product",
+        "description": "Removes a product using its ID.",
+
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Product ID",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Product deleted successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Product deleted successfully"
+                },
+                "product": {
+                  "$ref": "#/definitions/Product"
+                }
+              }
+            }
+          },
+
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+
+          "404": {
+            "description": "Product not found",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+
+    "/api/cartItems": {
+      "get": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Get authenticated user's cart",
+        "description": "Returns all cart items belonging to the authenticated user.",
+
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Cart items fetched successfully",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CartItem"
+              }
+            }
+          },
+
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      },
+
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Add product to cart",
+        "description": "Adds a product to the authenticated user's cart.",
+
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "query",
+            "description": "ID of the product to add",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "quantity",
+            "in": "query",
+            "description": "Quantity of the product",
+            "required": true,
+            "type": "integer",
+            "minimum": 1
+          }
+        ],
+
+        "responses": {
+          "201": {
+            "description": "Product added to cart successfully"
+          },
+
+          "400": {
+            "description": "Invalid product ID or quantity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+
+    "/api/cartItems/{id}": {
+      "delete": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Remove item from cart",
+        "description": "Removes a cart item belonging to the authenticated user.",
+
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Cart item ID",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Cart item removed successfully"
+          },
+
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+
+          "404": {
+            "description": "Cart item not found",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "definitions": {
+    "UserSignupRequest": {
+      "type": "object",
+
+      "required": [
+        "name",
+        "email",
+        "password",
+        "type"
+      ],
+
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Bibek Roy"
         },
- 
-        "/api/products" :{
-            "get" :{
-                "tags":["products"],
-                "summary":"get Products",
-                "description": "user will get all products",
-                "security":[{"JWT":{}}],
-                "responses":{
-                    "200":{
-                        "description":"ok"
-                    },
-                    "401":{
-                        "description":"unathorized"
-                    }
-                }
 
-            }
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "bibek@gmail.com"
+        },
+
+        "password": {
+          "type": "string",
+          "format": "password",
+          "example": "1234"
+        },
+
+        "type": {
+          "type": "string",
+          "enum": [
+            "customer",
+            "seller"
+          ],
+          "example": "customer"
         }
-    }
-    
-    }
+      }
+    },
 
+    "UserSigninRequest": {
+      "type": "object",
+
+      "required": [
+        "email",
+        "password"
+      ],
+
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "bibek@gmail.com"
+        },
+
+        "password": {
+          "type": "string",
+          "format": "password",
+          "example": "1234"
+        }
+      }
+    },
+
+    "User": {
+      "type": "object",
+
+      "properties": {
+        "id": {
+          "type": "integer",
+          "example": 1
+        },
+
+        "name": {
+          "type": "string",
+          "example": "Bibek Roy"
+        },
+
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "bibek@gmail.com"
+        },
+
+        "type": {
+          "type": "string",
+          "example": "customer"
+        }
+      }
+    },
+
+    "SigninResponse": {
+      "type": "object",
+
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Login successful"
+        },
+
+        "token": {
+          "type": "string",
+          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        }
+      }
+    },
+
+    "ProductInput": {
+      "type": "object",
+
+      "required": [
+        "name",
+        "desc",
+        "category",
+        "price",
+        "size"
+      ],
+
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Adidas Running Shoes"
+        },
+
+        "desc": {
+          "type": "string",
+          "example": "Lightweight and comfortable running shoes."
+        },
+
+        "imageUrl": {
+          "type": "string",
+          "example": "/uploads/adidas-shoes.jpg"
+        },
+
+        "category": {
+          "type": "string",
+          "example": "Category1"
+        },
+
+        "price": {
+          "type": "number",
+          "format": "float",
+          "example": 4999
+        },
+
+        "size": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "7",
+            "8",
+            "9",
+            "10"
+          ]
+        }
+      }
+    },
+
+    "ProductUpdateInput": {
+      "type": "object",
+
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Updated Product Name"
+        },
+
+        "desc": {
+          "type": "string",
+          "example": "Updated product description."
+        },
+
+        "imageUrl": {
+          "type": "string",
+          "example": "/uploads/updated-product.jpg"
+        },
+
+        "category": {
+          "type": "string",
+          "example": "Category2"
+        },
+
+        "price": {
+          "type": "number",
+          "format": "float",
+          "example": 5499
+        },
+
+        "size": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "M",
+            "L",
+            "XL"
+          ]
+        }
+      }
+    },
+
+    "Rating": {
+      "type": "object",
+
+      "properties": {
+        "userId": {
+          "type": "integer",
+          "example": 1
+        },
+
+        "rating": {
+          "type": "number",
+          "format": "float",
+          "minimum": 1,
+          "maximum": 5,
+          "example": 5
+        }
+      }
+    },
+
+    "RatingInput": {
+      "type": "object",
+
+      "required": [
+        "productId",
+        "rating"
+      ],
+
+      "properties": {
+        "productId": {
+          "type": "integer",
+          "example": 1
+        },
+
+        "rating": {
+          "type": "number",
+          "format": "float",
+          "minimum": 1,
+          "maximum": 5,
+          "example": 5
+        }
+      }
+    },
+
+    "Product": {
+      "type": "object",
+
+      "properties": {
+        "id": {
+          "type": "integer",
+          "example": 1
+        },
+
+        "name": {
+          "type": "string",
+          "example": "Nike Air Max"
+        },
+
+        "desc": {
+          "type": "string",
+          "example": "Comfortable running shoes with breathable mesh."
+        },
+
+        "imageUrl": {
+          "type": "string",
+          "example": "/uploads/nike-airmax.jpg"
+        },
+
+        "category": {
+          "type": "string",
+          "example": "Category1"
+        },
+
+        "price": {
+          "type": "number",
+          "format": "float",
+          "example": 5999
+        },
+
+        "size": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "7",
+            "8",
+            "9",
+            "10"
+          ]
+        },
+
+        "rating": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Rating"
+          }
+        }
+      }
+    },
+
+    "CartItem": {
+      "type": "object",
+
+      "properties": {
+        "id": {
+          "type": "integer",
+          "example": 1
+        },
+
+        "productId": {
+          "type": "integer",
+          "example": 1
+        },
+
+        "userId": {
+          "type": "integer",
+          "example": 2
+        },
+
+        "quantity": {
+          "type": "integer",
+          "example": 1
+        }
+      }
+    },
+
+    "ErrorResponse": {
+      "type": "object",
+
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Something went wrong"
+        },
+
+        "error": {
+          "type": "string",
+          "example": "Error details"
+        }
+      }
+    }
+  }
+}

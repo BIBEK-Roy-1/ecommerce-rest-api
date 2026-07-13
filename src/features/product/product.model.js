@@ -1,105 +1,228 @@
 import UserModel from "../user/user.model.js";
 
-export default class ProductModel{
+export default class ProductModel {
+  constructor(
+    id,
+    name,
+    desc,
+    imageUrl,
+    category,
+    price,
+    size
+  ) {
+    this.id = id;
+    this.name = name;
+    this.desc = desc;
+    this.imageUrl = imageUrl;
+    this.category = category;
+    this.price = price;
+    this.size = size;
+    this.rating = [];
+  }
 
-    constructor(id,name,desc,imageUrl,category,price,size){
-        this.id=id;
-        this.name=name;
-        this.desc=desc;
-        this.imageUrl=imageUrl;
-        this.category=category;
-        this.price=price;
-        this.size=size;
+  // Get all products
+  static getAll() {
+    return products;
+  }
+
+  // Get one product by ID
+  static getById(id) {
+    return products.find(
+      (product) => product.id === Number(id)
+    );
+  }
+
+  // Add a new product
+  static addProduct(productData) {
+    const newId =
+      products.length === 0
+        ? 1
+        : Math.max(
+            ...products.map((product) => product.id)
+          ) + 1;
+
+    const sizes = Array.isArray(productData.size)
+      ? productData.size
+      : String(productData.size)
+          .split(",")
+          .map((size) => size.trim())
+          .filter((size) => size !== "");
+
+    const newProduct = new ProductModel(
+      newId,
+      productData.name,
+      productData.desc,
+      productData.imageUrl,
+      productData.category,
+      Number(productData.price),
+      sizes
+    );
+
+    products.push(newProduct);
+
+    return newProduct;
+  }
+
+  // Update a product
+  static updateProduct(id, updates) {
+    const product = this.getById(id);
+
+    if (!product) {
+      return null;
     }
 
-    static getAll(){
-        return products;
-    }
+    const allowedFields = [
+      "name",
+      "desc",
+      "imageUrl",
+      "category",
+      "price",
+      "size"
+    ];
 
-    static addProduct(){
-
-    }
-
-    static filter(minPrice,MaxPrice,category){
-     const result= products.filter((product)=>{
-          return (
-           (!minPrice || product.price>=minPrice) &&
-           (!MaxPrice || product.price<=MaxPrice) &&
-            (!category ||product.category==category)
-          )
-      })
-      return result;;
-    }
-
-    // static rateProduct(userID,productId,rating){
-    //     //1.validate user and product
-    //   const user=  UserModel.getAll().find((u)=>u.id==userID);
-    //   if(!user){
-    //     return 'user not found';
-    //   }
-    //   //2.validate products
-    //    const product=products.find((u)=>u.id==productId);
-    //   if(!product){
-    //     return 'product not found';
-    //   }
-
-    //   //3.check if there any rating if not add ratings array
-
-    //   if(!product.rating){
-    //     product.rating=[];
-    //     product.rating.push({userID : userID,rating : rating})
-    //   }else{
-    //     //check user rating is already available
-    //     const exisistingRating=product.rating.findIndex((u)=>u.userID==userID);
-    //     if(exisistingRating>=0){
-    //       product.rating[exisistingRating]={
-    //         userID:userID,
-    //         rating:rating
-    //       }
-    //     }else{
-    //       //if no existing rating
-    //         product.rating.push({userID : userID,rating : rating})
-    //       }
-    //   }
-
-
-    // }
-
-
-    static rateProduct(userId,productId,rating){
-        const user=UserModel.getAll().find((u)=>u.id==userId);
-        if(!user){
-          return 'user is not found'
+    allowedFields.forEach((field) => {
+      if (updates[field] !== undefined) {
+        if (
+          field === "size" &&
+          !Array.isArray(updates[field])
+        ) {
+          product[field] = String(updates[field])
+            .split(",")
+            .map((size) => size.trim())
+            .filter((size) => size !== "");
+        } else {
+          product[field] = updates[field];
         }
-        const product=products.find((p)=>p.id==productId);
-        if(!product){
-          return 'product not found'
-        }
-        if(!product.rating){
-          product.rating=[];
-          product.rating.push({
-            userId:userId,
-            rating:rating
-          })
-        }else{
-          const exisistingRating=product.rating.findIndex((u)=>u.userId==userId);
-          if(exisistingRating>=0){
-            product.rating[exisistingRating].push({
-            userId:userId,
-            rating:rating
-          })
-          }else{
-            product.rating.push({
-            userId:userId,
-            rating:rating
-          })
-          }
-          
-        }
+      }
+    });
+
+    return product;
+  }
+
+  // Delete a product
+  static deleteProduct(id) {
+    const productIndex = products.findIndex(
+      (product) => product.id === Number(id)
+    );
+
+    if (productIndex === -1) {
+      return null;
     }
+
+    const deletedProducts = products.splice(
+      productIndex,
+      1
+    );
+
+    return deletedProducts[0];
+  }
+
+  // Filter products
+  static filter(minPrice, maxPrice, category) {
+    const minimumPrice =
+      minPrice === undefined || minPrice === ""
+        ? null
+        : Number(minPrice);
+
+    const maximumPrice =
+      maxPrice === undefined || maxPrice === ""
+        ? null
+        : Number(maxPrice);
+
+    const normalizedCategory = category
+      ? category.trim().toLowerCase()
+      : null;
+
+    return products.filter((product) => {
+      const matchesMinPrice =
+        minimumPrice === null ||
+        (!Number.isNaN(minimumPrice) &&
+          product.price >= minimumPrice);
+
+      const matchesMaxPrice =
+        maximumPrice === null ||
+        (!Number.isNaN(maximumPrice) &&
+          product.price <= maximumPrice);
+
+      const matchesCategory =
+        normalizedCategory === null ||
+        product.category.toLowerCase() ===
+          normalizedCategory;
+
+      return (
+        matchesMinPrice &&
+        matchesMaxPrice &&
+        matchesCategory
+      );
+    });
+  }
+
+  // Add or update product rating
+  static rateProduct(userId, productId, rating) {
+    if (!userId) {
+      return {
+        error: "User ID is required",
+        status: 401
+      };
+    }
+
+    const user = UserModel.getAll().find(
+      (currentUser) => currentUser.id == userId
+    );
+
+    if (!user) {
+      return {
+        error: "User not found",
+        status: 404
+      };
+    }
+
+    const product = this.getById(productId);
+
+    if (!product) {
+      return {
+        error: "Product not found",
+        status: 404
+      };
+    }
+
+    const numericRating = Number(rating);
+
+    if (
+      Number.isNaN(numericRating) ||
+      numericRating < 1 ||
+      numericRating > 5
+    ) {
+      return {
+        error: "Rating must be between 1 and 5",
+        status: 400
+      };
+    }
+
+    const existingRatingIndex =
+      product.rating.findIndex(
+        (item) => item.userId == userId
+      );
+
+    const ratingData = {
+      userId,
+      rating: numericRating
+    };
+
+    if (existingRatingIndex >= 0) {
+      // Update existing rating
+      product.rating[existingRatingIndex] =
+        ratingData;
+    } else {
+      // Add new rating
+      product.rating.push(ratingData);
+    }
+
+    return {
+      product
+    };
+  }
 }
-
-
 
 let products = [
   new ProductModel(

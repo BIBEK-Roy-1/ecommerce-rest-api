@@ -15,18 +15,18 @@ server.use(express.json());
 server.get("/", (req, res) => {
   res.send("Welcome to Ecommerce APIs");
 });
-
-// Redirect to the trailing-slash URL
-server.get("/api-docs", (req, res) => {
-  res.redirect("/api-docs/");
-});
-
 // Swagger documentation
 server.use(
   "/api-docs/",
   swaggerUi.serve,
   swaggerUi.setup(swaggerDocument)
 );
+
+// Redirect to the trailing-slash URL
+server.get("/api-docs", (req, res) => {
+  res.redirect("/api-docs/");
+});
+
 
 server.use("/api/products", jwtAuth, ProductRouter);
 server.use("/api/user", userrouter);

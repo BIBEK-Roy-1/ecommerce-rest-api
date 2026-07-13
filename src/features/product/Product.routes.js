@@ -1,26 +1,53 @@
-//manage rutes to ProductController
-
+import express from "express";
 import ProductController from "./product.controller.js";
 
+const ProductRouter = express.Router();
 
-//1. import express
-import express from "express";
+const productController =
+  new ProductController();
 
-//2.initilized express getrouter
-const ProductsRouter=express.Router();
+// GET /api/products
+ProductRouter.get(
+  "/",
+  productController.getAllProducts
+);
 
-const productcontroller=new ProductController();
+// GET /api/products/filter
+// This must stay before /:id
+ProductRouter.get(
+  "/filter",
+  productController.filterProducts
+);
 
+// POST /api/products/rate
+// This must also stay before /:id
+ProductRouter.post(
+  "/rate",
+  productController.rateProduct
+);
 
-//all the paths to controller method
-ProductsRouter.get("/",productcontroller.getAllProducts);
-ProductsRouter.post("/",productcontroller.addProduct);
+// POST /api/products
+ProductRouter.post(
+  "/",
+  productController.addProduct
+);
 
-ProductsRouter.get("/filter",productcontroller.filterProducts)
-ProductsRouter.get('/:id',productcontroller.getOneProduct);
+// GET /api/products/:id
+ProductRouter.get(
+  "/:id",
+  productController.getOneProduct
+);
 
-ProductsRouter.post('/rate',productcontroller.rateProduct);
+// PUT /api/products/:id
+ProductRouter.put(
+  "/:id",
+  productController.updateProduct
+);
 
+// DELETE /api/products/:id
+ProductRouter.delete(
+  "/:id",
+  productController.deleteProduct
+);
 
-export default ProductsRouter;
-
+export default ProductRouter;
