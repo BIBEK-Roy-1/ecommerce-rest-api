@@ -1,11 +1,7 @@
+import "dotenv/config";
 import express from "express";
 import swagger from "swagger-ui-express";
 import swaggerDocument from "./swagger.json" with { type: "json" };
-
-
-
-
-
 import ProductRouter from "./src/features/product/Product.routes.js";
 import bodyParser from "body-parser";
 import userrouter from "./src/features/user/user.route.js";
@@ -44,6 +40,6 @@ server.use(
 
 const PORT = process.env.PORT || 3100;
 
-server.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on port ${PORT}`);
 });

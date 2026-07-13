@@ -5,7 +5,6 @@
         "description":"API for E-commerce application",
         "title":"E-commerce API"
     },
-    "host" : "localhost:3100",
     "securityDefinitions": {
         "JWT":{
             "in":"header",

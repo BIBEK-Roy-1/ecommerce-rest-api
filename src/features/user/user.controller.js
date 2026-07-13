@@ -15,7 +15,7 @@ export default class UserController{
             return res.status(400).send("Incorrenct Credentials")
           }else{
             //jwt-create token
-            const token=jwt.sign({userID: result.id,email:result.email},"yyrpa4zOOhZZbxUwVw8iLfvh",{expiresIn:'1h'}) //(payload,secret key,options) options like -algo,expiresIn,notbefore etc
+            const token=jwt.sign({userID: result.id,email:result.email},process.env.JWT_SECRET,{expiresIn:'1h'}) //(payload,secret key,options) options like -algo,expiresIn,notbefore etc
             console.log(token);
              // send token
         return res.status(200).send(token);

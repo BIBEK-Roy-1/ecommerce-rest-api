@@ -12,7 +12,10 @@ const jwtAuth=(req,res,next)=>{
 
     //3.check is tokn is valid(use the sa,e libary used to create token )
     try{
-      const payload =  jwt.verify(token,"yyrpa4zOOhZZbxUwVw8iLfvh")   //(token,key which is used to sign the token )
+     const payload = jwt.verify(
+  token,
+  process.env.JWT_SECRET
+);   //(token,key which is used to sign the token )
     //verify method returns the payload if have any issue it will throw error
         
     req.userId=payload.userID;
