@@ -1,0 +1,23 @@
+1. products{
+    Get products
+    Add a products
+    get one product
+    Rate product 
+    filter product
+}
+
+2.userController{
+    signup-Email,name,pass,TypeOfUser(customer,seller)
+    Signin(email,password)
+}
+
+3.basic authentication{check middleware}
+
+4.JWT authentication{
+    install jwt
+    1.controller- import jwt
+        in signIN in successful signin generate token 
+        
+}
+
+5.swgger documentation (API doc)
