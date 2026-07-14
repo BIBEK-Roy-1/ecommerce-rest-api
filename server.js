@@ -7,6 +7,7 @@ import ProductRouter from "./src/features/product/Product.routes.js";
 import userrouter from "./src/features/user/user.route.js";
 import jwtAuth from "./src/middlewares/jwt.middleware.js";
 import cartrouter from "./src/features/cart/cartitems.routes.js";
+import loggerMiddleware from "./src/middlewares/logger.middleware.js";
 
 const server = express();
 
@@ -27,8 +28,12 @@ server.get("/api-docs", (req, res) => {
   res.redirect("/api-docs/");
 });
 
+
+
+server.use(loggerMiddleware);
+
 //using cors library
-var corOptions={
+var corsOptions={
   origin:'*'
 }
 
