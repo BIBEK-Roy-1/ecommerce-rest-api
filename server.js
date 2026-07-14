@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger.json" with { type: "json" };
-
+import cors from "cors";
 import ProductRouter from "./src/features/product/Product.routes.js";
 import userrouter from "./src/features/user/user.route.js";
 import jwtAuth from "./src/middlewares/jwt.middleware.js";
@@ -27,6 +27,27 @@ server.get("/api-docs", (req, res) => {
   res.redirect("/api-docs/");
 });
 
+//CORS policy config
+server.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+  );
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
 
 server.use("/api/products", jwtAuth, ProductRouter);
 server.use("/api/user", userrouter);
@@ -37,6 +58,8 @@ server.use("/api/cartItems", jwtAuth, cartrouter);
 server.use((req,res)=>{
   res.status(404).send("API not found.Please check our documentation for more information at https://ecommerce-rest-api-chgz.onrender.com/api-docs/");
 })
+
+
 
 const PORT = process.env.PORT || 3100;
 
