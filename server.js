@@ -32,6 +32,12 @@ server.use("/api/products", jwtAuth, ProductRouter);
 server.use("/api/user", userrouter);
 server.use("/api/cartItems", jwtAuth, cartrouter);
 
+
+//MiddleWare to handle 404 request
+server.use((req,res)=>{
+  res.status(404).send("API not found.Please check our documentation for more information at https://ecommerce-rest-api-chgz.onrender.com/api-docs/");
+})
+
 const PORT = process.env.PORT || 3100;
 
 server.listen(PORT, "0.0.0.0", () => {
